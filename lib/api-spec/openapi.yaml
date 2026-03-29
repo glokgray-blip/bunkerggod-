@@ -1,15 +1,18 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: BUNKER API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: messages
+    description: Chat message operations
+  - name: characters
+    description: AI character operations
 paths:
   /healthz:
     get:
@@ -24,6 +27,98 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /characters:
+    get:
+      operationId: listCharacters
+      tags: [characters]
+      summary: List AI characters
+      responses:
+        "200":
+          description: List of AI characters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Character"
+  /messages/{characterId}:
+    get:
+      operationId: getMessages
+      tags: [messages]
+      summary: Get messages for a character chat
+      parameters:
+        - in: path
+          name: characterId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Message"
+    post:
+      operationId: sendMessage
+      tags: [messages]
+      summary: Send a message to an AI character
+      parameters:
+        - in: path
+          name: characterId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendMessageRequest"
+      responses:
+        "200":
+          description: AI response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+    delete:
+      operationId: burnHistory
+      tags: [messages]
+      summary: Delete all messages for a character (burn history)
+      parameters:
+        - in: path
+          name: characterId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: History burned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BurnHistoryResponse"
+  /browser/analyze:
+    post:
+      operationId: analyzePage
+      tags: [messages]
+      summary: Analyze current browser page with AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzePageRequest"
+      responses:
+        "200":
+          description: AI analysis of the page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyzePageResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +128,89 @@ components:
           type: string
       required:
         - status
-
+    Character:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        avatar:
+          type: string
+        status:
+          type: string
+          enum: [online, offline, busy]
+        description:
+          type: string
+        specialty:
+          type: string
+      required:
+        - id
+        - name
+        - avatar
+        - status
+        - description
+        - specialty
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+        characterId:
+          type: string
+        content:
+          type: string
+        role:
+          type: string
+          enum: [user, assistant]
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - id
+        - characterId
+        - content
+        - role
+        - timestamp
+    SendMessageRequest:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+        - content
+    BurnHistoryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+        - message
+    AnalyzePageRequest:
+      type: object
+      properties:
+        url:
+          type: string
+        content:
+          type: string
+      required:
+        - url
+    AnalyzePageResponse:
+      type: object
+      properties:
+        summary:
+          type: string
+        keyPoints:
+          type: array
+          items:
+            type: string
+        privacyRisk:
+          type: string
+          enum: [low, medium, high]
+      required:
+        - summary
+        - keyPoints
+        - privacyRisk

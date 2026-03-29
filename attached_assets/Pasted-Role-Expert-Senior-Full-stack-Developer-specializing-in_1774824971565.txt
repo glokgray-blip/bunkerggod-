@@ -1,0 +1,25 @@
+Role: Expert Senior Full-stack Developer specializing in React Native and Cyberpunk UI/UX.
+Task: Build the initial architecture and UI for "BUNKER" — a high-privacy Super-App.
+​1. Visual Identity & Theme:
+​Style: Dark Mode only. Cyberpunk / Neon aesthetics (Deep blacks, electric blue, and neon pink accents).
+​UI Elements: Glassmorphism (semi-transparent backgrounds), blurred overlays, and high-contrast typography.
+​Navigation: A fixed bottom Navigation Bar with 5 tabs:
+​AI Characters (Home/Lobby)
+​AI Browser (Integrated Webview)
+​Chats (Messenger Interface)
+​Feed (Empty scrollable container for future "Reels")
+​Profile (User settings and Verification)
+​2. Tab Specifications:
+​Tab 1 (AI Characters): A grid of "Character Cards" with neon borders. Each card has an avatar, name (e.g., "Echo"), and "Status: Online". Clicking a card opens a dedicated chat interface with a "Burn History" button.
+​Tab 2 (AI Browser): A full-screen WebView component with a top URL bar. Overlay a "Floating Action Button" (FAB) with a glowing AI icon. When pressed, it should trigger a bottom-sheet summary panel.
+​Tab 3 (Chats): A classic messenger list (Delta Chat style). High privacy look. Messaging bubbles should have a glowing outline.
+​Tab 5 (Profile): Clean layout. Feature a "Verify Identity" section with VK ID and Yandex ID placeholder buttons.
+​3. Functional Logic (Vibe Coding Ready):
+​API Bridge: All outgoing messages and browser analysis requests must be routed to a central API_BASE_URL (placeholder for my n8n/VPS).
+​Privacy: Implement a local "Self-Destruct" toggle in settings that clears all local states and cache.
+​Authentication: Create a Mock-up login screen using OAuth logic for VK/Yandex.
+​4. Technical Stack:
+​Use React Native (Expo) or Next.js for cross-platform compatibility.
+​Use Lucide-react for icons.
+​Use Framer Motion (or Reanimated) for smooth, futuristic transitions between tabs.
+​Deliver a clean, modular folder structure. Ensure the code is ready for "Vibe Coding" iterations where I can simply say "Change the glow intensity" or "Add a new AI character".

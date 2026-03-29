@@ -1,0 +1,17 @@
+packages:
+  "framer-motion": "For smooth tab transitions, bottom sheet sliding, and cyberpunk glowing animations"
+  "clsx": "For conditional class name merging in UI components"
+  "tailwind-merge": "To properly merge Tailwind utility classes"
+  "date-fns": "For formatting timestamps in the chat interfaces"
+
+images:
+  - path: "artifacts/bunker/public/images/cyber-bg.png"
+    description: "Dark cyberpunk background, pure black atmosphere with subtle glowing neon blue and pink grid lines and smoky depth, 80s synthwave retro-futuristic style"
+    aspect_ratio: "16:9"
+  - path: "artifacts/bunker/public/images/bunker-logo.png"
+    description: "Minimalist glowing neon skull logo in electric blue and magenta, cyberpunk hacker aesthetic, centered on black background"
+    aspect_ratio: "1:1"
+
+notes:
+  - Expects @workspace/api-client-react to expose the generated Orval hooks.
+  - UI relies on localStorage for the mock authentication state.
