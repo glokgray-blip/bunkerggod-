@@ -39,19 +39,36 @@ const ru = {
   },
 
   browser: {
-    secure:         "ЗАЩИЩЕНО",
-    trackers:       "{{count}} ТРЕКЕРА",
-    analyzing:      "Извлечение данных...",
-    neuralAnalysis: "Нейронный Анализ",
-    threatLevel:    "Уровень угрозы",
-    coreSynthesis:  "Основной синтез",
-    vectors:        "Ключевые факты",
-    error:          "[ОШИБКА] Нейросвязь разорвана. Цель блокирует доступ.",
+    secure:           "ЗАЩИЩЕНО",
+    trackers:         "{{count}} ТРЕКЕРА",
+    blocked:          "{{count}} заблокировано",
+    shieldActive:     "Щит активен",
+
+    tabAnalysis:      "Анализ",
+    tabCookies:       "Куки",
+
+    runAnalysis:      "Запустить анализ",
+    analysisIdleDesc: "Нажмите кнопку для запуска нейронного анализа текущей страницы.",
+    analyzing:        "Извлечение данных...",
+    neuralAnalysis:   "Нейронный Анализ",
+    threatLevel:      "Уровень угрозы",
+    coreSynthesis:    "Основной синтез",
+    vectors:          "Ключевые факты",
+    error:            "[ОШИБКА] Нейросвязь разорвана. Цель блокирует доступ.",
     risk: {
       low:    "НИЗКИЙ",
       medium: "СРЕДНИЙ",
       high:   "ВЫСОКИЙ",
     },
+
+    cookieManager:   "Менеджер Куки",
+    cookiesFound:    "{{count}} куки найдено",
+    deleteAll:       "Удалить всё",
+    deleteForSite:   "Удалить для этого сайта",
+    noCookies:       "Куки не обнаружены",
+    cookieExpires:   "Истекает",
+    cookieSecure:    "Secure",
+    allSites:        "Все сайты",
   },
 
   chats: {
