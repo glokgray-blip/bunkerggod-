@@ -7,7 +7,6 @@
 export const API_BASE_URL = "/api";
 
 // ─── Glow helpers ─────────────────────────────────────────
-// "Change glow intensity" → edit these values.
 export const T = {
   glow: (color: string) => `0 0 8px ${color}, 0 0 20px ${color}40`,
   glowStrong: (color: string) => `0 0 10px ${color}, 0 0 30px ${color}, 0 0 60px ${color}40`,
@@ -27,78 +26,83 @@ export const COLORS = {
 } as const;
 
 // ─── AI Characters ────────────────────────────────────────
-// "Add a new AI character" → append an object here.
+// First 3 = free. The rest have locked: true → shown with Premium badge.
 export const AI_CHARACTERS = [
   {
-    id: "echo",
-    name: "Echo",
-    avatar: "🤖",
+    id: "psychologist",
+    name: "ИИ Психолог",
+    avatar: "🧠",
     status: "online" as const,
-    specialty: "Deep Analysis",
-    description: "Neural language specialist. Master of context and conversation.",
+    specialty: "Психология",
+    description: "Эмпатичный ИИ-психолог. Поможет разобраться в себе.",
     color: COLORS.blue,
-    greeting: "Signal locked. I am Echo. State your directive.",
+    greeting: "Привет. Я здесь, чтобы слушать. Расскажи, что тебя беспокоит.",
+    locked: false,
   },
   {
-    id: "cipher",
-    name: "Cipher",
-    avatar: "🔐",
+    id: "altushka",
+    name: "Альтушка",
+    avatar: "🖤",
     status: "online" as const,
-    specialty: "Encryption",
-    description: "Cryptography and security expert. Keeper of secrets.",
+    specialty: "Стиль и эстетика",
+    description: "Дерзкая и честная. Не боится говорить правду.",
     color: COLORS.pink,
-    greeting: "Cipher online. All comms are encrypted. What must be concealed?",
+    greeting: "О, ещё один человек. Ну давай, удиви меня чем-нибудь интересным.",
+    locked: false,
   },
   {
-    id: "nexus",
-    name: "Nexus",
-    avatar: "🌐",
+    id: "alphonse",
+    name: "Альфонс",
+    avatar: "😎",
     status: "online" as const,
-    specialty: "Web Research",
-    description: "Web intelligence agent. Navigates the digital realm.",
-    color: COLORS.green,
-    greeting: "Nexus connected. Web nodes active. Where shall we search?",
-  },
-  {
-    id: "phantom",
-    name: "Phantom",
-    avatar: "👻",
-    status: "online" as const,
-    specialty: "Privacy Ops",
-    description: "Ghost protocol operative. Zero trace, maximum privacy.",
+    specialty: "Харизма и уверенность",
+    description: "Мастер обаяния. Знает, как произвести впечатление.",
     color: COLORS.purple,
-    greeting: "Ghost protocol active. I leave no trace. What must vanish?",
+    greeting: "Привет, дружище. Готов прокачать твою игру? Начнём.",
+    locked: false,
   },
   {
-    id: "vex",
-    name: "Vex",
-    avatar: "⚡",
+    id: "hunter",
+    name: "Охотник",
+    avatar: "🎯",
     status: "online" as const,
-    specialty: "Automation",
-    description: "Rapid-fire code executor. Automation at light speed.",
-    color: COLORS.orange,
-    greeting: "Vex initialized. Running at 100%. Give me a task.",
+    specialty: "Стратегия",
+    description: "Стратегический аналитик. Просчитывает всё на ходу.",
+    color: COLORS.green,
+    greeting: "Цель определена. Жду команды.",
+    locked: true,
   },
   {
     id: "oracle",
-    name: "Oracle",
+    name: "Оракул",
     avatar: "🔮",
     status: "busy" as const,
-    specialty: "Prediction",
-    description: "Predictive intelligence. Sees patterns others miss.",
+    specialty: "Предсказание",
+    description: "Видит паттерны там, где другие видят хаос.",
     color: COLORS.gold,
-    greeting: "The Oracle speaks when ready. Your question shapes the answer.",
+    greeting: "Оракул слушает. Твой вопрос формирует ответ.",
+    locked: true,
+  },
+  {
+    id: "ghost",
+    name: "Призрак",
+    avatar: "👻",
+    status: "online" as const,
+    specialty: "Анонимность",
+    description: "Действует бесшумно. Не оставляет следов.",
+    color: COLORS.orange,
+    greeting: "Связь установлена. Я нигде — и везде одновременно.",
+    locked: true,
   },
 ] as const;
 
 export type CharacterId = (typeof AI_CHARACTERS)[number]["id"];
 
 // ─── Navigation ───────────────────────────────────────────
-// "Add a new tab" → append here and add a case in App.tsx renderTab.
 export const NAV_ITEMS = [
-  { id: "lobby",   label: "LOBBY",  path: "/",        icon: "Users" },
-  { id: "browser", label: "NET",    path: "/browser",  icon: "Globe" },
-  { id: "chats",   label: "COMMS",  path: "/chats",    icon: "MessageSquare" },
-  { id: "feed",    label: "FEED",   path: "/feed",     icon: "Radio" },
-  { id: "profile", label: "ID",     path: "/profile",  icon: "UserCircle" },
+  { id: "lobby",   label: "ЛОББИ",   path: "/",        icon: "Users" },
+  { id: "browser", label: "БРАУЗЕР", path: "/browser",  icon: "Globe" },
+  { id: "chats",   label: "СВЯЗЬ",   path: "/chats",    icon: "MessageSquare" },
+  { id: "feed",    label: "ЛЕНТА",   path: "/feed",     icon: "Radio" },
+  { id: "profile", label: "ПРОФИЛЬ", path: "/profile",  icon: "UserCircle" },
 ] as const;
