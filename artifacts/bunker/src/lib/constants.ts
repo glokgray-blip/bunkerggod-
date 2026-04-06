@@ -86,7 +86,7 @@ export const AI_CHARACTERS = [
   {
     id:          "stalker",
     webhookName: "stalker",
-    name:        "Станкер",
+    name:        "Сталкер",
     avatar:      "🗺️",
     status:      "online" as const,
     specialty:   "Техно-гид",
