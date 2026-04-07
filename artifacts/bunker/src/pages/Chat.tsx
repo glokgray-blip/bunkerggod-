@@ -16,41 +16,43 @@ interface Msg {
 
 // ── n8n send helper ────────────────────────────────────────
 async function sendToN8n(webhookName: string, message: string, userId?: string): Promise<string> {
-  const resolvedUserId = userId ?? "test_user_123";
+  const resolvedUserId = userId ?? "test_user_timokha";
   const body = { character: webhookName, message, userId: resolvedUserId };
 
   console.log("[BUNKER] → n8n request:", { url: N8N_WEBHOOK, body });
 
-  let res: Response;
   try {
-    res = await fetch(N8N_WEBHOOK, {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify(body),
+    const res = await fetch(N8N_WEBHOOK, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify(body),
     });
-  } catch (networkErr) {
-    console.error("[BUNKER] ✖ Network error (no response):", networkErr);
-    throw networkErr;
+
+    if (!res.ok) {
+      console.error(`[BUNKER] HTTP Error: ${res.status}`);
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    console.log("[BUNKER] ← n8n response:", data);
+
+    // Умный поиск ответа в разных полях
+    const reply = data?.output || data?.text || data?.message || data?.reply ||
+                  (typeof data === "string" ? data : null);
+
+    if (!reply) {
+      console.error("[BUNKER] Ошибка: n8n прислал пустой ответ или не те поля", data);
+      throw new Error("n8n прислал пустой ответ");
+    }
+
+    return String(reply);
+  } catch (err) {
+    console.error("[BUNKER] Connection error:", err);
+    throw err;
   }
-
-  console.log("[BUNKER] ← n8n response status:", res.status, res.statusText);
-
-  if (!res.ok) {
-    const errText = await res.text().catch(() => "(не удалось прочитать тело)");
-    console.error("[BUNKER] ✖ HTTP error body:", errText);
-    throw new Error(`HTTP ${res.status}`);
-  }
-
-  const data = await res.json();
-  console.log("[BUNKER] ← n8n response data:", data);
-
-  // Accept reply, message, text, or output field
-  const reply = data?.reply ?? data?.message ?? data?.text ?? data?.output ?? null;
-  if (!reply) {
-    console.error("[BUNKER] ✖ No reply field in response. Keys received:", Object.keys(data));
-    throw new Error("no reply field");
-  }
-  return String(reply);
 }
 
 // ── Component ──────────────────────────────────────────────
