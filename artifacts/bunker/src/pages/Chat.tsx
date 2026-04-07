@@ -15,17 +15,41 @@ interface Msg {
 }
 
 // ── n8n send helper ────────────────────────────────────────
-async function sendToN8n(webhookName: string, message: string): Promise<string> {
-  const res = await fetch(N8N_WEBHOOK, {
-    method:  "POST",
-    headers: { "Content-Type": "application/json" },
-    body:    JSON.stringify({ character: webhookName, message }),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+async function sendToN8n(webhookName: string, message: string, userId?: string): Promise<string> {
+  const resolvedUserId = userId ?? "test_user_123";
+  const body = { character: webhookName, message, userId: resolvedUserId };
+
+  console.log("[BUNKER] → n8n request:", { url: N8N_WEBHOOK, body });
+
+  let res: Response;
+  try {
+    res = await fetch(N8N_WEBHOOK, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify(body),
+    });
+  } catch (networkErr) {
+    console.error("[BUNKER] ✖ Network error (no response):", networkErr);
+    throw networkErr;
+  }
+
+  console.log("[BUNKER] ← n8n response status:", res.status, res.statusText);
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "(не удалось прочитать тело)");
+    console.error("[BUNKER] ✖ HTTP error body:", errText);
+    throw new Error(`HTTP ${res.status}`);
+  }
+
   const data = await res.json();
+  console.log("[BUNKER] ← n8n response data:", data);
+
   // Accept reply, message, text, or output field
   const reply = data?.reply ?? data?.message ?? data?.text ?? data?.output ?? null;
-  if (!reply) throw new Error("no reply field");
+  if (!reply) {
+    console.error("[BUNKER] ✖ No reply field in response. Keys received:", Object.keys(data));
+    throw new Error("no reply field");
+  }
   return String(reply);
 }
 
