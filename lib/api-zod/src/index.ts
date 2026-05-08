@@ -1,2 +1,10 @@
 export * from "./generated/api";
-export * from "./generated/types";
+export type { AnalyzePageRequest } from "./generated/types/analyzePageRequest";
+export type { AnalyzePageResponse } from "./generated/types/analyzePageResponse";
+export type { BurnHistoryResponse } from "./generated/types/burnHistoryResponse";
+export type { Character } from "./generated/types/character";
+export type { CharacterStatus } from "./generated/types/characterStatus";
+export type { HealthStatus } from "./generated/types/healthStatus";
+export type { Message } from "./generated/types/message";
+export type { MessageRole } from "./generated/types/messageRole";
+export type { SendMessageRequest } from "./generated/types/sendMessageRequest";

@@ -2,7 +2,9 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+import { HTMLMotionProps } from "framer-motion";
+
+export interface ButtonProps extends Omit<HTMLMotionProps<"button">, "ref"> {
   variant?: "primary" | "secondary" | "destructive" | "ghost" | "glass";
   size?: "sm" | "md" | "lg" | "icon";
   isLoading?: boolean;
@@ -52,7 +54,7 @@ export const CyberButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {isLoading ? (
           <span className="animate-pulse">PROCESSING...</span>
         ) : (
-          children
+          children as React.ReactNode
         )}
       </motion.button>
     );
