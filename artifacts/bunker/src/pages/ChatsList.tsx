@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Shield, Plus, Radio, Wifi, Hexagon } from "lucide-react";
+import { Lock, Shield, Plus, Radio, Wifi, Hexagon, X, User } from "lucide-react";
 import { T } from "@/lib/constants";
 import { useTranslation } from "react-i18next";
 
@@ -302,43 +303,144 @@ export default function ChatsList() {
       {/* Conversation list */}
       <div className="space-y-2">
         {CONVERSATIONS.map((chat, i) => (
-          <motion.div key={chat.id}
-            initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.07, type: "spring", stiffness: 260, damping: 22 }}
-            whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-4 p-4 cursor-pointer transition-all rounded-sm"
-            style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.04)", backdropFilter: "blur(8px)" }}>
-            <div className="relative shrink-0">
-              <div className="w-12 h-12 rounded-sm flex items-center justify-center font-display font-black text-xl text-black uppercase"
-                style={{ background: `linear-gradient(135deg, ${chat.color}, ${chat.color}80)`, boxShadow: T.glow(chat.color) }}>
-                {chat.name.charAt(0)}
+          <Link key={chat.id} href={`/chat/${chat.id}`}>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.07, type: "spring", stiffness: 260, damping: 22 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center gap-4 p-4 cursor-pointer transition-all rounded-sm group"
+              style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.04)", backdropFilter: "blur(8px)" }}>
+              <div className="relative shrink-0">
+                <div className="w-12 h-12 rounded-sm flex items-center justify-center font-display font-black text-xl text-black uppercase"
+                  style={{ background: `linear-gradient(135deg, ${chat.color}, ${chat.color}80)`, boxShadow: T.glow(chat.color) }}>
+                  {chat.name.charAt(0)}
+                </div>
+                {chat.unread > 0 && (
+                  <motion.div animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 1.5, repeat: Infinity }}
+                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-black border-2 border-black"
+                    style={{ background: "#ff00cc", boxShadow: T.glow("#ff00cc") }}>
+                    {chat.unread}
+                  </motion.div>
+                )}
               </div>
-              {chat.unread > 0 && (
-                <motion.div animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 1.5, repeat: Infinity }}
-                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-black border-2 border-black"
-                  style={{ background: "#ff00cc", boxShadow: T.glow("#ff00cc") }}>
-                  {chat.unread}
-                </motion.div>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-baseline justify-between mb-1">
-                <h3 className="font-display font-bold text-sm text-white uppercase tracking-wide truncate">{chat.name}</h3>
-                <span className="font-tech text-[9px] text-gray-600 shrink-0 ml-2 tracking-wider">{chat.time}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline justify-between mb-1">
+                  <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider group-hover:text-cyan-400 transition-colors">
+                    {chat.name}
+                  </h3>
+                  <span className="font-tech text-[9px] text-gray-600 shrink-0 ml-2 tracking-wider">{chat.time}</span>
+                </div>
+                <p className="text-[11px] text-gray-500 truncate font-sans leading-snug">{chat.lastMsg}</p>
               </div>
-              <p className="text-[11px] text-gray-500 truncate font-sans leading-snug">{chat.lastMsg}</p>
-            </div>
-            <Lock className="w-3 h-3 shrink-0"
-              style={{ color: chat.encrypted ? "#00ff8840" : "#ff336640" }} />
-          </motion.div>
+              <Lock className="w-3 h-3 shrink-0"
+                style={{ color: chat.encrypted ? "#00ff8840" : "#ff336640" }} />
+            </motion.div>
+          </Link>
         ))}
       </div>
 
-      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+      <AddUserModal />
+    </div>
+  );
+}
+
+function AddUserModal() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [userId, setUserId] = useState("");
+
+  return (
+    <>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setIsOpen(true)}
         className="fixed bottom-24 right-5 z-30 rounded-full flex items-center justify-center p-3.5"
         style={{ background: "rgba(255,0,204,0.12)", border: "1px solid rgba(255,0,204,0.4)", boxShadow: T.glow("#ff00cc") }}>
         <Plus className="w-5 h-5" style={{ color: "#ff00cc" }} />
       </motion.button>
-    </div>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md"
+            onClick={() => setIsOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="w-full max-w-sm rounded-sm p-8 relative overflow-hidden"
+              style={{
+                background: "rgba(10,10,15,0.95)",
+                border: "1px solid rgba(0,240,255,0.2)",
+                boxShadow: "0 0 50px rgba(0,240,255,0.1)"
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
+
+              <button
+                onClick={() => setIsOpen(false)}
+                className="absolute top-4 right-4 p-1 text-gray-500 hover:text-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="flex flex-col items-center gap-6">
+                <div className="p-4 rounded-full bg-cyan-500/10 border border-cyan-500/30">
+                  <User className="w-8 h-8 text-cyan-400" />
+                </div>
+
+                <div className="text-center">
+                  <h3 className="font-display font-bold text-xl text-white uppercase tracking-widest mb-2">
+                    Подключить Узел
+                  </h3>
+                  <p className="font-tech text-[10px] text-gray-500 uppercase tracking-[0.2em]">
+                    Введите ID оперативника для установки связи
+                  </p>
+                </div>
+
+                <div className="w-full space-y-4">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={userId}
+                      onChange={(e) => setUserId(e.target.value)}
+                      placeholder="USER_ID_HASH"
+                      className="w-full bg-black/50 border border-cyan-500/20 px-4 py-3 font-mono text-sm text-cyan-400 focus:outline-none focus:border-cyan-500/50 transition-all placeholder:text-gray-700"
+                    />
+                    <div className="absolute bottom-0 left-0 h-[1px] w-full bg-cyan-500/10" />
+                  </div>
+
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full py-4 font-display font-bold text-xs uppercase tracking-[0.3em]"
+                    style={{
+                      background: "rgba(0,240,255,0.1)",
+                      border: "1px solid rgba(0,240,255,0.4)",
+                      color: "#00f0ff",
+                      boxShadow: T.glow("#00f0ff")
+                    }}
+                    onClick={() => {
+                      if (userId.trim()) {
+                        localStorage.setItem("bunker_user_id", userId.trim());
+                        window.location.reload(); // Refresh to update user ID in state across app
+                      }
+                      setIsOpen(false);
+                    }}
+                  >
+                    ИНИЦИИРОВАТЬ СВЯЗЬ
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

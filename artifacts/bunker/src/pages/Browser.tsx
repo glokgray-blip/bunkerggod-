@@ -467,17 +467,33 @@ export default function Browser() {
       </div>
 
       {/* ── Iframe ── */}
-      <div className="flex-1 relative overflow-hidden">
+      <div className="flex-1 relative overflow-hidden p-2 bg-black">
         <div className="absolute inset-0 pointer-events-none opacity-[0.025] z-0"
           style={{ backgroundImage: "linear-gradient(#00f0ff55 1px,transparent 1px),linear-gradient(90deg,#00f0ff55 1px,transparent 1px)", backgroundSize: "30px 30px" }} />
-        <iframe
-          ref={iframeRef}
-          src={url}
-          className="w-full h-full border-none relative z-10 bg-white"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-          title="BUNKER Браузер"
-          onLoad={handleIframeLoad}
-        />
+
+        {/* Stylized Frame */}
+        <div className="w-full h-full relative rounded-sm overflow-hidden border border-cyan-500/20 shadow-[0_0_30px_rgba(0,240,255,0.05)]">
+          {/* Decorative Corner Accents */}
+          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-500/40 z-20 pointer-events-none" />
+          <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-500/40 z-20 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-500/40 z-20 pointer-events-none" />
+          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-500/40 z-20 pointer-events-none" />
+
+          {/* Secure Status Overlay (Top) */}
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/80 backdrop-blur-md border border-cyan-500/30 rounded-full z-20 flex items-center gap-2 pointer-events-none">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+            <span className="font-tech text-[8px] uppercase tracking-[0.2em] text-cyan-400/80">Secure Connection Est.</span>
+          </div>
+
+          <iframe
+            ref={iframeRef}
+            src={url}
+            className="w-full h-full border-none relative z-10 bg-white"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+            title="BUNKER Браузер"
+            onLoad={handleIframeLoad}
+          />
+        </div>
 
         {/* FAB — opens analysis */}
         <motion.button

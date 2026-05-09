@@ -3,10 +3,11 @@
 // ─────────────────────────────────────────────────────────
 
 /** Central API endpoint (backend). */
-export const API_BASE_URL = "/api";
+// The user requested interaction with API on port 3005
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3005/api";
 
 /** n8n webhook — receives messages for free characters. */
-export const N8N_WEBHOOK = "https://timhook.app.n8n.cloud/webhook/bunker-chat";
+export const N8N_WEBHOOK = import.meta.env.VITE_N8N_WEBHOOK || "https://timhook.app.n8n.cloud/webhook/bunker-chat";
 
 // ─── Glow helpers ─────────────────────────────────────────
 export const T = {
