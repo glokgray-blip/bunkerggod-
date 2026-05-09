@@ -2,8 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Flame, ChevronLeft, ShieldCheck, AlertTriangle } from "lucide-react";
-import { AI_CHARACTERS, N8N_WEBHOOK, T } from "@/lib/constants";
+import { Send, Flame, ChevronLeft, ShieldCheck, AlertTriangle, Hash } from "lucide-react";
+import { AI_CHARACTERS, N8N_WEBHOOK, API_BASE_URL, T } from "@/lib/constants";
 import { useTranslation } from "react-i18next";
 
 // ── Types ──────────────────────────────────────────────────
@@ -14,43 +14,46 @@ interface Msg {
   timestamp:   string;
 }
 
-// ── n8n send helper ────────────────────────────────────────
+// ── API send helper (Port 3005) ──────────────────────────────
+async function sendMessageToApi(characterId: string, message: string, userId?: string): Promise<string> {
+  const resolvedUserId = userId || "test_user_timokha";
+  // The backend might expect characterId in the URL or body
+  const url = `${API_BASE_URL}/messages/${characterId}`;
+
+  console.log("[BUNKER] → API request:", { url, message, userId: resolvedUserId });
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: message, userId: resolvedUserId }),
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    // Support various response formats
+    return data.content || data.reply || data.text || (typeof data === 'string' ? data : JSON.stringify(data));
+  } catch (err) {
+    console.error("[BUNKER] API Error:", err);
+    // Fallback to n8n if local API fails, or just throw
+    return sendToN8n(characterId, message, resolvedUserId);
+  }
+}
+
+// ── n8n send helper (Legacy fallback) ───────────────────────
 async function sendToN8n(webhookName: string, message: string, userId?: string): Promise<string> {
   const resolvedUserId = userId ?? "test_user_timokha";
   const body = { character: webhookName, message, userId: resolvedUserId };
 
-  console.log("[BUNKER] → n8n request:", { url: N8N_WEBHOOK, body });
-
   try {
     const res = await fetch(N8N_WEBHOOK, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-
-    if (!res.ok) {
-      console.error(`[BUNKER] HTTP Error: ${res.status}`);
-      throw new Error(`HTTP ${res.status}`);
-    }
-
     const data = await res.json();
-    console.log("[BUNKER] ← n8n response:", data);
-
-    // Умный поиск ответа в разных полях
-    const reply = data?.output || data?.text || data?.message || data?.reply ||
-                  (typeof data === "string" ? data : null);
-
-    if (!reply) {
-      console.error("[BUNKER] Ошибка: n8n прислал пустой ответ или не те поля", data);
-      throw new Error("n8n прислал пустой ответ");
-    }
-
-    return String(reply);
+    return data?.output || data?.text || data?.reply || String(data);
   } catch (err) {
-    console.error("[BUNKER] Connection error:", err);
     throw err;
   }
 }
@@ -88,6 +91,7 @@ export default function Chat() {
   const [loading,     setLoading]     = useState(false);
   const [burnConfirm, setBurnConfirm] = useState(false);
   const [burning,     setBurning]     = useState(false);
+  const [userId]                      = useState(() => localStorage.getItem("bunker_user_id") || "UID_UNKNOWN");
 
   // Auto-scroll
   useEffect(() => {
@@ -112,8 +116,7 @@ export default function Chat() {
     setLoading(true);
 
     try {
-      const webhookName = (char as any).webhookName ?? char.id;
-      const reply       = await sendToN8n(webhookName, text);
+      const reply = await sendMessageToApi(char.id, text, userId);
       setMessages(prev => [...prev, {
         id:        `a_${Date.now()}`,
         role:      "assistant",
@@ -172,19 +175,27 @@ export default function Chat() {
           <ChevronLeft className="w-6 h-6" />
         </button>
 
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center flex-1 mx-2">
           <div className="flex items-center gap-2">
-            <span className="text-xl">{char.avatar}</span>
-            <h2 className="font-display font-bold text-base tracking-widest uppercase text-white"
+            <span className="text-xl hidden sm:block">{char.avatar}</span>
+            <h2 className="font-display font-bold text-sm sm:text-base tracking-widest uppercase text-white truncate max-w-[120px] sm:max-w-none"
               style={{ textShadow: T.glowText(neon) }}>
               {char.name}
             </h2>
           </div>
-          <div className="flex items-center gap-1.5">
-            <ShieldCheck className="w-3 h-3" style={{ color: "#00ff88" }} />
-            <span className="font-tech text-[9px] tracking-widest uppercase" style={{ color: "#00ff88" }}>
-              {t("chat.encrypted")}
-            </span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              <ShieldCheck className="w-2.5 h-2.5" style={{ color: "#00ff88" }} />
+              <span className="font-tech text-[8px] tracking-widest uppercase" style={{ color: "#00ff88" }}>
+                SECURE
+              </span>
+            </div>
+            <div className="flex items-center gap-1 opacity-60">
+              <Hash className="w-2.5 h-2.5" style={{ color: neon }} />
+              <span className="font-tech text-[8px] tracking-widest uppercase" style={{ color: neon }}>
+                {userId.slice(0, 8)}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -264,28 +275,35 @@ export default function Chat() {
                 )}
 
                 <div
-                  className="max-w-[78%] px-4 py-3 relative"
+                  className="max-w-[85%] px-4 py-3 relative group"
                   style={{
                     background:   isUser  ? `${neon}10`
                                 : isError ? "rgba(255,51,102,0.08)"
-                                :           "rgba(20,20,30,0.8)",
+                                :           "rgba(20,20,30,0.85)",
                     border:       `1px solid ${
-                                    isUser  ? `${neon}35`
-                                  : isError ? "rgba(255,51,102,0.3)"
-                                  :           "rgba(255,255,255,0.07)"
+                                    isUser  ? `${neon}40`
+                                  : isError ? "rgba(255,51,102,0.4)"
+                                  :           `${neon}25`
                                 }`,
-                    boxShadow:    isUser ? `0 0 12px ${neon}12` : undefined,
+                    boxShadow:    isUser  ? `0 0 15px ${neon}12`
+                                : isError ? "0 0 15px rgba(255,51,102,0.1)"
+                                :           `inset 0 0 10px ${neon}05`,
                     borderRadius: isUser ? "12px 2px 12px 12px" : "2px 12px 12px 12px",
                   }}
                 >
+                  {/* Decorative Glow Line */}
+                  <div className={`absolute top-0 bottom-0 w-[1px] opacity-40 transition-all group-hover:opacity-100 ${isUser ? "-left-[1px]" : "-right-[1px]"}`}
+                    style={{ background: isError ? "#ff3366" : neon, boxShadow: T.glow(isError ? "#ff3366" : neon) }} />
+
                   {/* Corner accent */}
-                  <div className="absolute w-2 h-2 border-t"
+                  <div className="absolute w-2.5 h-2.5 border-t"
                     style={{
-                      top: 0,
-                      [isUser ? "right" : "left"]: 0,
-                      borderRight:    isUser ? `1px solid ${neon}60` : undefined,
-                      borderLeft:    !isUser ? `1px solid ${isError ? "rgba(255,51,102,0.4)" : "rgba(255,255,255,0.2)"}` : undefined,
-                      borderTopColor: isUser ? `${neon}60` : isError ? "rgba(255,51,102,0.4)" : "rgba(255,255,255,0.2)",
+                      top: -1,
+                      [isUser ? "right" : "left"]: -1,
+                      borderRight:    isUser ? `2px solid ${neon}` : undefined,
+                      borderLeft:    !isUser ? `2px solid ${isError ? "#ff3366" : neon}` : undefined,
+                      borderTopColor: isUser ? neon : isError ? "#ff3366" : neon,
+                      filter: `drop-shadow(${T.glow(isError ? "#ff3366" : neon)})`
                     }}
                   />
                   <p className="text-sm leading-relaxed whitespace-pre-wrap"
@@ -335,41 +353,47 @@ export default function Chat() {
       </div>
 
       {/* ── Input bar ── */}
-      <div className="px-4 pb-5 pt-3 z-10"
+      <div className="px-4 pb-6 pt-3 z-10 sm:pb-8"
         style={{
-          background:    "rgba(5,5,10,0.92)",
-          borderTop:     `1px solid ${neon}20`,
-          backdropFilter: "blur(16px)",
+          background:    "rgba(5,5,10,0.95)",
+          borderTop:     `1px solid ${neon}30`,
+          backdropFilter: "blur(20px)",
         }}>
-        <form onSubmit={handleSend} className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            placeholder={t("chat.placeholder")}
-            disabled={loading}
-            className="flex-1 bg-transparent py-3 px-4 text-sm font-tech uppercase tracking-wider placeholder:tracking-wider focus:outline-none transition-all disabled:opacity-50"
-            style={{
-              background:  "rgba(0,0,0,0.5)",
-              border:     `1px solid ${input ? `${neon}50` : "rgba(255,255,255,0.08)"}`,
-              color:       neon,
-              boxShadow:   input ? `inset 0 0 10px ${neon}08` : undefined,
-              caretColor:  neon,
-            }}
-          />
+        <form onSubmit={handleSend} className="flex gap-2 max-w-4xl mx-auto w-full">
+          <div className="relative flex-1 group">
+            <input
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              placeholder={t("chat.placeholder")}
+              disabled={loading}
+              className="w-full bg-transparent py-3.5 px-4 text-sm font-tech uppercase tracking-widest placeholder:tracking-widest focus:outline-none transition-all disabled:opacity-50"
+              style={{
+                background:  "rgba(0,0,0,0.7)",
+                border:     `1px solid ${input ? `${neon}80` : "rgba(255,255,255,0.15)"}`,
+                color:       neon,
+                boxShadow:   input ? `0 0 15px ${neon}15, inset 0 0 10px ${neon}10` : "inset 0 0 5px rgba(0,0,0,0.5)",
+                caretColor:  neon,
+              }}
+            />
+            {/* Input focus accent */}
+            <div className={`absolute bottom-0 left-0 h-[2px] transition-all duration-300 ${input ? "w-full" : "w-0"}`}
+              style={{ background: neon, boxShadow: T.glow(neon) }} />
+          </div>
+
           <motion.button
             type="submit"
             disabled={!input.trim() || loading}
-            whileTap={{ scale: 0.9 }}
-            className="px-5 flex items-center justify-center font-display font-bold text-xs tracking-widest uppercase disabled:opacity-30 transition-all"
+            whileTap={{ scale: 0.95 }}
+            className="px-6 flex items-center justify-center font-display font-bold text-xs tracking-widest uppercase disabled:opacity-20 transition-all relative overflow-hidden"
             style={{
-              background: `${neon}15`,
-              border:     `1px solid ${neon}50`,
+              background: `${neon}20`,
+              border:     `1px solid ${neon}60`,
               color:       neon,
               boxShadow:   input.trim() && !loading ? T.glow(neon) : undefined,
             }}
           >
-            <Send className="w-5 h-5" />
+             <Send className={`w-5 h-5 ${loading ? "animate-pulse" : ""}`} />
           </motion.button>
         </form>
       </div>
